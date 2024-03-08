@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	ffmpeg_go "github.com/u2takey/ffmpeg-go"
 )
 
 func main() {
@@ -33,12 +35,15 @@ func main() {
 
 	for _, emote := range emotes.EmoteSet.Emotes {
 		baseUrl := emote.Data.Host.URL
+
 		emoteFileName := emote.Data.Host.Files[len(emote.Data.Host.Files)-1]
+		emoteFileName.Name = "4x.avif"
 
 		shortEmoteList = append(shortEmoteList, ShortEmoteList{
-			FullUrl:   "https:" + baseUrl + "/" + emoteFileName.Name,
-			Extension: strings.ToLower(emoteFileName.Format),
-			EmoteName: emote.Data.Name,
+			FullUrl:    "https:" + baseUrl + "/" + emoteFileName.Name,
+			Extension:  strings.ToLower(emoteFileName.Format),
+			EmoteName:  emote.Data.Name,
+			IsAnimated: emote.Data.Animated,
 		})
 	}
 
@@ -58,18 +63,53 @@ func main() {
 
 		defer resp.Body.Close()
 
-		out, err := os.Create(filepath.Join(
+		fileName := filepath.Join(
 			emotes.Username,
 			"emotes",
-			shortEmote.EmoteName+"."+shortEmote.Extension))
+			shortEmote.EmoteName+"."+shortEmote.Extension)
+
+		fileNameConv := ""
+
+		if shortEmote.IsAnimated {
+			fileNameConv = filepath.Join(
+				emotes.Username,
+				"emotes",
+				shortEmote.EmoteName+".gif")
+		} else {
+			fileNameConv = filepath.Join(
+				emotes.Username,
+				"emotes",
+				shortEmote.EmoteName+".png")
+		}
+
+		out, err := os.Create(fileName)
 		if err != nil {
 			fmt.Println("Error creating file", err.Error())
 			continue
 		}
 
-		defer out.Close()
+		defer func() {
+			out.Close()
+			err = os.Remove(fileName)
+			if err != nil {
+				fmt.Println("Error deleting file", err.Error())
+			}
+		}()
 
 		io.Copy(out, resp.Body)
+
+		err = ffmpeg_go.Input(fileName).
+			Output(fileNameConv).
+			OverWriteOutput().
+			GlobalArgs("-hide_banner", "-loglevel", "panic", "-y").
+			ErrorToStdOut().
+			Silent(true).
+			Run()
+
+		if err != nil {
+			fmt.Println("Error converting file", err.Error())
+			continue
+		}
 	}
 
 	fmt.Println("Download completed", emotes.User.Username, tv7UserId)

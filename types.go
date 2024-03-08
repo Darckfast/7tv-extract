@@ -99,7 +99,8 @@ type Emotes struct {
 }
 
 type ShortEmoteList struct {
-	EmoteName string `json:"emote_name"`
-	FullUrl   string `json:"full_url"`
-	Extension string `json:"extension"`
+	EmoteName  string `json:"emote_name"`
+	FullUrl    string `json:"full_url"`
+	Extension  string `json:"extension"`
+	IsAnimated bool   `json:"is_animated"`
 }
