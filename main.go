@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -19,8 +20,13 @@ func main() {
 	tv7UserId := os.Args[1:]
 
 	if len(tv7UserId) == 0 {
-		fmt.Println("No 7tv id")
-		return
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("Enter user id: ")
+		userId, _ := reader.ReadString('\n')
+
+		userId = strings.TrimSpace(userId)
+
+		tv7UserId = append(tv7UserId, userId)
 	}
 
 	resp, err := http.Get("https://7tv.io/v3/users/twitch/" + tv7UserId[0])
