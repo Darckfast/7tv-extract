@@ -3,11 +3,13 @@ module 7tv-extract
 go 1.21rc3
 
 require (
+	github.com/akavel/rsrc v0.10.2 // indirect
 	github.com/aws/aws-sdk-go v1.38.20 // indirect
 	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/hhrutter/lzw v1.0.0 // indirect
 	github.com/hhrutter/tiff v1.0.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/josephspurrier/goversioninfo v1.4.0 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/pdfcpu/pdfcpu v0.5.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

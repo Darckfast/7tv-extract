@@ -13,6 +13,8 @@ import (
 	ffmpeg_go "github.com/u2takey/ffmpeg-go"
 )
 
+//go:generate goversioninfo
+
 func main() {
 	tv7UserId := os.Args[1:]
 
