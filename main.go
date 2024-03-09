@@ -3,25 +3,27 @@ package main
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
-
-	ffmpeg_go "github.com/u2takey/ffmpeg-go"
+	"sync"
 )
 
 //go:generate goversioninfo
+
+var hasMagick = true
 
 func main() {
 	tv7UserId := os.Args[1:]
 
 	if len(tv7UserId) == 0 {
 		reader := bufio.NewReader(os.Stdin)
-		fmt.Print("Enter user id: ")
+		log.Print("Enter user id: ")
 		userId, _ := reader.ReadString('\n')
 
 		userId = strings.TrimSpace(userId)
@@ -31,7 +33,7 @@ func main() {
 
 	resp, err := http.Get("https://7tv.io/v3/users/twitch/" + tv7UserId[0])
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 		return
 	}
 
@@ -46,11 +48,11 @@ func main() {
 		baseUrl := emote.Data.Host.URL
 
 		emoteFileName := emote.Data.Host.Files[len(emote.Data.Host.Files)-1]
-		emoteFileName.Name = "4x.avif"
+		emoteFileName.Name = "4x.webp"
 
 		shortEmoteList = append(shortEmoteList, ShortEmoteList{
 			FullUrl:    "https:" + baseUrl + "/" + emoteFileName.Name,
-			Extension:  strings.ToLower(emoteFileName.Format),
+			Extension:  "webp",
 			EmoteName:  emote.Data.Name,
 			IsAnimated: emote.Data.Animated,
 		})
@@ -63,14 +65,19 @@ func main() {
 
 	limiter := make(chan int, runtime.NumCPU())
 
+	var wg sync.WaitGroup
+
+	CheckForMagick()
+
 	for index, shortEmote := range shortEmoteList {
 		limiter <- 1
+		wg.Add(1)
 
 		go func(shortEmote ShortEmoteList, index int) {
-			fmt.Printf("%d/%d Downloading emote %s\n", index+1, len(shortEmoteList), shortEmote.EmoteName)
+			log.Printf("%d/%d Downloading emote %s\n", index+1, len(shortEmoteList), shortEmote.EmoteName)
 			resp, err := http.Get(shortEmote.FullUrl)
 			if err != nil {
-				fmt.Println("Error making the request", err.Error())
+				log.Println("Error making the request", err.Error())
 				<-limiter
 				return
 			}
@@ -82,48 +89,58 @@ func main() {
 				"emotes",
 				shortEmote.EmoteName+"."+shortEmote.Extension)
 
-			fileNameConv := ""
-
-			if shortEmote.IsAnimated {
-				fileNameConv = filepath.Join(
-					emotes.Username,
-					"emotes",
-					shortEmote.EmoteName+".gif")
-			} else {
-				fileNameConv = filepath.Join(
-					emotes.Username,
-					"emotes",
-					shortEmote.EmoteName+".png")
-			}
-
 			out, err := os.Create(fileName)
 			if err != nil {
-				fmt.Println("Error creating file", err.Error())
+				log.Println("Error creating file", err.Error())
 				<-limiter
 				return
 			}
 
 			defer func() {
 				out.Close()
+				log.Printf("%d/%d Converting emote %s", index+1, len(shortEmoteList), shortEmote.EmoteName)
+				ConvertFile(fileName, shortEmote.IsAnimated)
 				os.Remove(fileName)
+
+				wg.Done()
 			}()
 
 			io.Copy(out, resp.Body)
 
-			err = ffmpeg_go.Input(fileName).
-				Output(fileNameConv).
-				OverWriteOutput().
-				GlobalArgs("-hide_banner", "-loglevel", "panic", "-y").
-				ErrorToStdOut().
-				Silent(true).
-				Run()
-
-			if err != nil {
-				fmt.Println("Error converting file", err.Error())
-			}
 			<-limiter
 		}(shortEmote, index)
 	}
+	wg.Wait()
 
-	fmt.Println("Download completed", emotes.User.Username, tv7UserId)
+	log.Println("Completed", emotes.User.Username, tv7UserId)
+
+	if !hasMagick {
+		log.Println("For auto conversion first install ImageMagick https://imagemagick.org/script/download.php")
+	}
+}
+
+func CheckForMagick() {
+	_, err := exec.LookPath("magick")
+	hasMagick = err == nil
+}
+
+func ConvertFile(fileName string, isAnimated bool) {
+	if !hasMagick {
+		log.Println("skipping")
+		return
+	}
+
+	path, _ := os.Getwd()
+
+	extension := "png"
+
+	if isAnimated {
+		extension = "gif"
+	}
+
+	cmd := exec.Command("magick", "mogrify", "-format", extension, filepath.Join(path, fileName))
+
+	if err := cmd.Run(); err != nil {
+		log.Println(err)
+	}
 }
