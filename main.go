@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"io"
 	"log"
@@ -63,7 +64,10 @@ func main() {
 	os.MkdirAll(filepath.Join(emotes.Username, "emotes"), os.ModePerm)
 	os.WriteFile(filepath.Join(emotes.Username, "emotes_list.json"), stringContent, os.ModePerm)
 
-	limiter := make(chan int, runtime.NumCPU())
+	threads := runtime.NumCPU()
+
+	log.Printf("Using %d threads\n", threads)
+	limiter := make(chan int, threads)
 
 	var wg sync.WaitGroup
 
@@ -79,6 +83,7 @@ func main() {
 			if err != nil {
 				log.Println("Error making the request", err.Error())
 				<-limiter
+				wg.Done()
 				return
 			}
 
@@ -93,21 +98,20 @@ func main() {
 			if err != nil {
 				log.Println("Error creating file", err.Error())
 				<-limiter
+				wg.Done()
 				return
 			}
 
 			defer func() {
 				out.Close()
 				log.Printf("%d/%d Converting emote %s", index+1, len(shortEmoteList), shortEmote.EmoteName)
-				ConvertFile(fileName, shortEmote.IsAnimated)
+				ConvertFile(fileName, shortEmote.IsAnimated, limiter)
 				os.Remove(fileName)
 
 				wg.Done()
 			}()
 
 			io.Copy(out, resp.Body)
-
-			<-limiter
 		}(shortEmote, index)
 	}
 	wg.Wait()
@@ -122,11 +126,13 @@ func main() {
 func CheckForMagick() {
 	_, err := exec.LookPath("magick")
 	hasMagick = err == nil
+	exec.Command("set", "MAGICK_OCL_DEVICE=true")
 }
 
-func ConvertFile(fileName string, isAnimated bool) {
+func ConvertFile(fileName string, isAnimated bool, limiter chan int) {
 	if !hasMagick {
 		log.Println("skipping")
+		<-limiter
 		return
 	}
 
@@ -138,9 +144,17 @@ func ConvertFile(fileName string, isAnimated bool) {
 		extension = "gif"
 	}
 
-	cmd := exec.Command("magick", "mogrify", "-format", extension, filepath.Join(path, fileName))
+	var outb, errb bytes.Buffer
+
+	outputFileName := strings.Replace(fileName, "webp", extension, 1)
+	cmd := exec.Command("magick", filepath.Join(path, fileName), "-coalesce", "-layers", "optimize-transparency", outputFileName)
+	cmd.Stdout = &outb
+	cmd.Stderr = &errb
 
 	if err := cmd.Run(); err != nil {
-		log.Println(err)
+		log.Println("Error while converting file", err.Error())
+		log.Println("Error", errb.String(), outb.String())
 	}
+
+	<-limiter
 }
