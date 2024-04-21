@@ -54,7 +54,7 @@ func main() {
 	}
 
 	if !hasGifsicle {
-		log.Println("For higher gif compression first install https://www.lcdf.org/gifsicle/")
+		log.Println("For higher GIF compression first install https://www.lcdf.org/gifsicle/")
 	}
 
 	wg := sync.WaitGroup{}
@@ -161,7 +161,7 @@ func CheckForGifsicle() bool {
 }
 
 func CheckForMagick() bool {
-	_, err := exec.LookPath("")
+	_, err := exec.LookPath("magick")
 	hasMagick = err == nil
 	exec.Command("set", "MAGICK_OCL_DEVICE=true")
 
@@ -170,7 +170,7 @@ func CheckForMagick() bool {
 
 func ConvertFile(fileName string, isAnimated bool, limiter chan int) {
 	if !hasMagick {
-		log.Println("skipping")
+		log.Println("skipping auto conversion, the file will remain as .webp")
 		<-limiter
 		return
 	}
@@ -248,7 +248,7 @@ func ConvertFile(fileName string, isAnimated bool, limiter chan int) {
 			sizeDiff = sizeDiff / float32(fileInfo.Size())
 			sizeDiff = sizeDiff * 100
 
-			log.Printf("Reduced from %d to %d (-%.2f%%)", fileInfo.Size(), newFileInfo.Size(), sizeDiff)
+			log.Printf("Reduced from %d to %d (%.2f%%)", fileInfo.Size(), newFileInfo.Size(), sizeDiff)
 		}
 	}
 
