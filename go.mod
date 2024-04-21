@@ -1,6 +1,6 @@
 module 7tv-extract
 
-go 1.21rc3
+go 1.22
 
 require github.com/stretchr/testify v1.6.1
 

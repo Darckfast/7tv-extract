@@ -18,7 +18,8 @@ import (
 )
 
 //go:generate goversioninfo
-var hasMagick = true
+var hasMagick = false
+var hasGifsicle = false
 
 func main() {
 	tv7UserId := os.Args[1:]
@@ -46,8 +47,17 @@ func main() {
 	limiter := make(chan int, threads)
 
 	CheckForMagick()
+	CheckForGifsicle()
 
-	var wg sync.WaitGroup
+	if !hasMagick {
+		log.Println("For auto conversion first install ImageMagick https://imagemagick.org/script/download.php")
+	}
+
+	if !hasGifsicle {
+		log.Println("For higher gif compression first install https://www.lcdf.org/gifsicle/")
+	}
+
+	wg := sync.WaitGroup{}
 
 	for index, shortEmote := range *shortEmoteList {
 		limiter <- 1
@@ -65,10 +75,6 @@ func main() {
 	wg.Wait()
 
 	log.Println("Completed", emotes.User.Username, tv7UserId)
-
-	if !hasMagick {
-		log.Println("For auto conversion first install ImageMagick https://imagemagick.org/script/download.php")
-	}
 }
 
 func GetEmoteList(userId string) (*[]ShortEmoteList, *Emotes) {
@@ -125,6 +131,8 @@ func DownloadEmote(
 		username,
 		shortEmote.EmoteName+"."+shortEmote.Extension)
 
+	fileName = strings.Replace(fileName, ":", "Colon", 1)
+
 	out, err := os.Create(fileName)
 	if err != nil {
 		log.Println("Error creating file", err.Error())
@@ -145,8 +153,15 @@ func DownloadEmote(
 	io.Copy(out, resp.Body)
 }
 
+func CheckForGifsicle() bool {
+	_, err := exec.LookPath("gifsicle")
+	hasGifsicle = err == nil
+
+	return hasGifsicle
+}
+
 func CheckForMagick() bool {
-	_, err := exec.LookPath("magick")
+	_, err := exec.LookPath("")
 	hasMagick = err == nil
 	exec.Command("set", "MAGICK_OCL_DEVICE=true")
 
@@ -183,7 +198,6 @@ func ConvertFile(fileName string, isAnimated bool, limiter chan int) {
 		"+dither",
 		outputFileName,
 	)
-
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
 
@@ -192,11 +206,14 @@ func ConvertFile(fileName string, isAnimated bool, limiter chan int) {
 		log.Println("Error", errb.String(), outb.String())
 	}
 
-	if extension == "gif" {
+	if extension == "gif" && hasGifsicle {
 		fileInfo, _ := os.Stat(outputFileName)
 
 		if fileInfo.Size() >= 256*1024 {
 			fileGif, _ := os.Open(outputFileName)
+
+			defer fileGif.Close()
+
 			gifDecoded, _ := gif.DecodeAll(fileGif)
 
 			totalFrams := len(gifDecoded.Image)
@@ -207,7 +224,6 @@ func ConvertFile(fileName string, isAnimated bool, limiter chan int) {
 				}
 
 				deleteArg := fmt.Sprintf("#%d", i)
-
 				cmdGifslice := exec.Command("gifsicle",
 					"-U",
 					outputFileName,
@@ -224,13 +240,16 @@ func ConvertFile(fileName string, isAnimated bool, limiter chan int) {
 
 				if err := cmdGifslice.Run(); err != nil {
 					log.Println("Error while converting file", err.Error())
-					log.Println("Error", errb.String(), outb.String())
 				}
 			}
-			newFileInfo, _ := os.Stat(outputFileName)
-			log.Printf("Reduced from %d to %d (-%.2f%%)", fileInfo.Size(), newFileInfo.Size(), (float32(newFileInfo.Size())/float32(fileInfo.Size()))*100)
-		}
 
+			newFileInfo, _ := os.Stat(outputFileName)
+			sizeDiff := float32(newFileInfo.Size() - fileInfo.Size())
+			sizeDiff = sizeDiff / float32(fileInfo.Size())
+			sizeDiff = sizeDiff * 100
+
+			log.Printf("Reduced from %d to %d (-%.2f%%)", fileInfo.Size(), newFileInfo.Size(), sizeDiff)
+		}
 	}
 
 	<-limiter
