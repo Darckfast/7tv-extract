@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"image/gif"
 	"io"
 	"log"
 	"net/http"
@@ -36,10 +38,7 @@ func main() {
 		return
 	}
 
-	stringContent, _ := json.MarshalIndent(shortEmoteList, "", " ")
-
-	os.MkdirAll(filepath.Join(emotes.Username, "emotes"), os.ModePerm)
-	os.WriteFile(filepath.Join(emotes.Username, "emotes_list.json"), stringContent, os.ModePerm)
+	os.MkdirAll(filepath.Join(emotes.Username), os.ModePerm)
 
 	threads := runtime.NumCPU()
 
@@ -124,7 +123,6 @@ func DownloadEmote(
 
 	fileName := filepath.Join(
 		username,
-		"emotes",
 		shortEmote.EmoteName+"."+shortEmote.Extension)
 
 	out, err := os.Create(fileName)
@@ -173,13 +171,66 @@ func ConvertFile(fileName string, isAnimated bool, limiter chan int) {
 	var outb, errb bytes.Buffer
 
 	outputFileName := strings.Replace(fileName, "webp", extension, 1)
-	cmd := exec.Command("magick", filepath.Join(path, fileName), "-coalesce", "-layers", "optimize-transparency", outputFileName)
+	cmd := exec.Command("magick",
+		filepath.Join(path, fileName),
+		"-coalesce",
+		"-layers",
+		"optimize-transparency",
+		"-scale",
+		"64x64",
+		"-fuzz",
+		"7%",
+		"+dither",
+		outputFileName,
+	)
+
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
 
 	if err := cmd.Run(); err != nil {
 		log.Println("Error while converting file", err.Error())
 		log.Println("Error", errb.String(), outb.String())
+	}
+
+	if extension == "gif" {
+		fileInfo, _ := os.Stat(outputFileName)
+
+		if fileInfo.Size() >= 256*1024 {
+			fileGif, _ := os.Open(outputFileName)
+			gifDecoded, _ := gif.DecodeAll(fileGif)
+
+			totalFrams := len(gifDecoded.Image)
+
+			for i := 0; i < totalFrams; i++ {
+				if i%2 == 0 {
+					continue
+				}
+
+				deleteArg := fmt.Sprintf("#%d", i)
+
+				cmdGifslice := exec.Command("gifsicle",
+					"-U",
+					outputFileName,
+					"--colors",
+					"255",
+					"--delete",
+					deleteArg,
+					"-o",
+					outputFileName,
+				)
+
+				cmdGifslice.Stdout = &outb
+				cmdGifslice.Stderr = &errb
+
+				if err := cmdGifslice.Run(); err != nil {
+					log.Println("Error while converting file", err.Error())
+					log.Println("Error", errb.String(), outb.String())
+				}
+			}
+			newFileInfo, _ := os.Stat(outputFileName)
+			log.Printf("Reduced from %d to %d (-%.2f%%)", fileInfo.Size(), newFileInfo.Size(), (float32(newFileInfo.Size())/float32(fileInfo.Size()))*100)
+		}
+
 	}
 
 	<-limiter
