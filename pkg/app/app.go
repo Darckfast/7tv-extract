@@ -77,6 +77,6 @@ func Run() {
 		}
 		wg.Wait()
 	}
-	
-    fmt.Println("Completed", emotes.User.Username, tv7UserId)
+
+	fmt.Println("Completed", emotes.User.Username, tv7UserId)
 }
