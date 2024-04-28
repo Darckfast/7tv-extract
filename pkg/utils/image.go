@@ -5,7 +5,6 @@ import (
 	"image/gif"
 	"image/png"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 
@@ -33,26 +32,19 @@ func ConvertFileNative(
 		wg.Done()
 	}()
 
-	fileName := filepath.Join(
-		username,
-		shortEmote.EmoteName+"."+shortEmote.Extension)
+	defer os.Remove(shortEmote.FilePath)
 
-	fileName = strings.Replace(fileName, ":", "Colon", 1)
-
-	defer os.Remove(fileName)
-
-	file, err := os.Open(fileName)
+	file, err := os.Open(shortEmote.FilePath)
 	if err != nil {
-		fmt.Println("Error opening file", fileName, err.Error())
+		fmt.Println("Error opening file", shortEmote, err.Error())
 		return
 	}
 
 	defer file.Close()
 
 	img, err := avif.Decode(file)
-	// _, err2 := avif.DecodeAll(file)
 	if err != nil {
-		fmt.Println(fileName, err.Error())
+		fmt.Println(shortEmote, err.Error())
 		panic(err)
 	}
 
@@ -63,7 +55,7 @@ func ConvertFileNative(
 		extension = "gif"
 	}
 
-	outputFileName := strings.Replace(fileName, "webp", extension, 1)
+	outputFileName := strings.Replace(shortEmote.FilePath, "avif", extension, 1)
 	outFile, _ := os.Create(outputFileName)
 
 	defer outFile.Close()
@@ -96,7 +88,6 @@ func ConvertFileNative(
 	// 			fmt.Println("Error decoding GIF", fileName, err.Error())
 	// 			return
 	// 		}
-	//
 	// 		totalFrams := len(gifDecoded.Image)
 	//
 	// 		for i := 0; i < totalFrams; i++ {

@@ -60,21 +60,24 @@ func Run() {
 			limiter,
 			&wg,
 		)
+
+		break
 	}
 	wg.Wait()
 
-		for _, shortEmote := range *shortEmoteList {
-			limiter <- 1
-			wg.Add(1)
+	for _, shortEmote := range *shortEmoteList {
+		limiter <- 1
+		wg.Add(1)
 
-			go utils.ConvertFileNative(
-				&shortEmote,
-				emotes.Username,
-				limiter,
-				&wg,
-			)
-		}
-		wg.Wait()
+		go utils.ConvertFileNative(
+			&shortEmote,
+			emotes.Username,
+			limiter,
+			&wg,
+		)
+		break
+	}
+	wg.Wait()
 
 	fmt.Println("Completed", emotes.User.Username, tv7UserId)
 }

@@ -3,12 +3,9 @@ module 7tv-extract
 go 1.22
 
 require (
-	github.com/Kagami/go-avif v0.1.0
 	github.com/gen2brain/avif v0.3.1
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
-	github.com/sizeofint/webpanimation v0.0.0-20210809145948-1d2b32119882
 	github.com/stretchr/testify v1.6.1
-	golang.org/x/image v0.15.0
 	golang.org/x/term v0.19.0
 )
 
