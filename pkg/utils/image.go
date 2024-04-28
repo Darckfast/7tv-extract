@@ -18,7 +18,6 @@ import (
 	"github.com/nfnt/resize"
 )
 
-var mu sync.Mutex
 var (
 	totalEmotesConverted atomic.Uint32 = atomic.Uint32{}
 	lastEmoteConverted   string        = ""
@@ -53,14 +52,11 @@ func ConvertFileNative(
 	defer file.Close()
 
 	if outputFileName[:3] == "png" {
-		mu.Lock()
 		img, err := avif.Decode(file)
 		if err != nil {
 			fmt.Println(shortEmote, err.Error())
 			panic(err)
 		}
-		mu.Unlock()
-		ResizeAndEncode(*shortEmote, outputFileName, 128, &img, nil)
 		finalFile, _ := os.Stat(outputFileName)
 
 		if finalFile.Size() > 256*1024 {
@@ -73,13 +69,11 @@ func ConvertFileNative(
 			ResizeAndEncode(*shortEmote, outputFileName, 64, &img, nil)
 		}
 	} else {
-		mu.Lock()
 		imgs, err := avif.DecodeAll(file)
 		if err != nil {
 			fmt.Println(shortEmote, err.Error())
 			panic(err)
 		}
-		mu.Unlock()
 		ResizeAndEncode(*shortEmote, outputFileName, 128, nil, imgs)
 		finalFile, _ := os.Stat(outputFileName)
 
