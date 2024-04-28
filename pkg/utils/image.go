@@ -3,7 +3,7 @@ package utils
 import (
 	"fmt"
 	"image"
-	"image/color/palette"
+	"image/color"
 	"image/draw"
 	"image/gif"
 	"image/png"
@@ -14,6 +14,7 @@ import (
 
 	"7tv-extract/pkg/types"
 
+	"github.com/Nykakin/quantize"
 	"github.com/gen2brain/avif"
 	"github.com/nfnt/resize"
 )
@@ -41,7 +42,7 @@ func ConvertFileNative(
 		extension = "gif"
 	}
 
-	outputFileName := strings.Replace(shortEmote.FilePath, "avif", extension, 1)
+	outputFileName := strings.Replace(shortEmote.FilePath, shortEmote.Extension, extension, 1)
 
 	file, err := os.Open(shortEmote.FilePath)
 	if err != nil {
@@ -51,12 +52,13 @@ func ConvertFileNative(
 
 	defer file.Close()
 
-	if outputFileName[:3] == "png" {
+	if !shortEmote.IsAnimated {
 		img, err := avif.Decode(file)
 		if err != nil {
 			fmt.Println(shortEmote, err.Error())
-			panic(err)
+			return
 		}
+		ResizeAndEncode(*shortEmote, outputFileName, 128, &img, nil)
 		finalFile, _ := os.Stat(outputFileName)
 
 		if finalFile.Size() > 256*1024 {
@@ -111,20 +113,34 @@ func ResizeAndEncode(
 
 	defer outFile.Close()
 
-	if outputFileName[:3] == "png" {
-		newImg := resize.Resize(size, 0, *img, resize.Lanczos3)
+	if img != nil {
+		newImg := resize.Resize(0, size, *img, resize.Lanczos3)
 		png.Encode(outFile, newImg)
-	} else {
+	} else if imgs != nil {
 		var imgGif gif.GIF
-		customPalette := append(palette.WebSafe, image.Transparent)
+
+		customPalette := color.Palette{
+			image.Transparent,
+		}
+
+		quantizer := quantize.NewHierarhicalQuantizer()
 
 		for _, img := range imgs.Image {
-			resizedImg := resize.Resize(size, 0, img, resize.Lanczos3)
+			resizedImg := resize.Resize(0, size, img, resize.Lanczos3)
+			colors, _ := quantizer.Quantize(resizedImg, 5)
+
+			palette := make([]color.Color, len(colors))
+			for index, clr := range colors {
+				palette[index] = clr
+			}
+
+			customPalette = append(customPalette, palette...)
 			palettedImg := image.NewPaletted(resizedImg.Bounds(), customPalette)
 
-			draw.Draw(palettedImg, palettedImg.Rect, resizedImg, resizedImg.Bounds().Min, draw.Over)
+			draw.Draw(palettedImg, palettedImg.Rect, resizedImg, resizedImg.Bounds().Min, draw.Src)
 			imgGif.Image = append(imgGif.Image, palettedImg)
-			imgGif.Delay = append(imgGif.Delay, 0)
+			imgGif.Delay = append(imgGif.Delay, 1)
+			imgGif.Disposal = append(imgGif.Disposal, gif.DisposalPrevious)
 		}
 
 		gif.EncodeAll(outFile, &imgGif)

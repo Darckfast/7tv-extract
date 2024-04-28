@@ -56,12 +56,13 @@ func Run() {
 		limiter <- 1
 		wg.Add(1)
 
-		 utils.ConvertFileNative(
+		utils.ConvertFileNative(
 			&shortEmote,
 			emotes.Username,
 			limiter,
 			&wg,
 		)
+
 	}
 	wg.Wait()
 

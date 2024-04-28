@@ -1,3 +1,7 @@
+github.com/Nykakin/eigenvalues v0.0.0-20180218201739-8f7f53af5d88 h1:EgonejJ+bvJhCoGqJc2Thr93biEv9D2QRjXDaYDjr5U=
+github.com/Nykakin/eigenvalues v0.0.0-20180218201739-8f7f53af5d88/go.mod h1:dO+3fLK/eeT19asBbQ3M+jL2nXaos6zbOMCT3nFXK0c=
+github.com/Nykakin/quantize v0.0.0-20190320194030-e96048211e3e h1:jZ//lt2fy3A5j5lEGMMK38K21Bucv7npcXyKTL4gqdk=
+github.com/Nykakin/quantize v0.0.0-20190320194030-e96048211e3e/go.mod h1:7wcsEAXsnjypDiUlel3HRfyosv3k02VSua2WgpF1llg=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -5,6 +9,8 @@ github.com/ebitengine/purego v0.7.1 h1:6/55d26lG3o9VCZX8lping+bZcmShseiqlh2bnUDi
 github.com/ebitengine/purego v0.7.1/go.mod h1:ah1In8AOtksoNK6yk5z1HTJeUkC1Ez4Wk2idgGslMwQ=
 github.com/gen2brain/avif v0.3.1 h1:womS2LKvhS/dSR3zIKUxtJW+riGlY48akGWqc+YgHtE=
 github.com/gen2brain/avif v0.3.1/go.mod h1:s9sI2zo2cF6EdyRVCtnIfwL/Qb3k0TkOIEsz6ovK1ms=
+github.com/gen2brain/webp v0.4.3 h1:EtKN50OQQKucor/rVa7dYVL2CObyxtIRl/4N/PZkj0I=
+github.com/gen2brain/webp v0.4.3/go.mod h1:4B2bZAeutMBvabnV96t3S06eW3wWfr6uU5nw4X5j+zc=
 github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 h1:zYyBkD/k9seD2A7fsi6Oo2LfFZAehjjQMERAvZLEDnQ=
 github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646/go.mod h1:jpp1/29i3P1S/RLdc7JQKbRpFeM1dOBd8T9ki5s+AY8=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

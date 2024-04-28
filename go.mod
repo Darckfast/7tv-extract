@@ -1,6 +1,8 @@
 module 7tv-extract
 
-go 1.22
+go 1.22.0
+
+toolchain go1.22.2
 
 require (
 	github.com/gen2brain/avif v0.3.1
@@ -10,8 +12,11 @@ require (
 )
 
 require (
+	github.com/Nykakin/eigenvalues v0.0.0-20180218201739-8f7f53af5d88 // indirect
+	github.com/Nykakin/quantize v0.0.0-20190320194030-e96048211e3e // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/ebitengine/purego v0.7.1 // indirect
+	github.com/gen2brain/webp v0.4.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/tetratelabs/wazero v1.7.1 // indirect
 	golang.org/x/sys v0.19.0 // indirect

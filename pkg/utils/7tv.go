@@ -19,8 +19,8 @@ var (
 	discordEmotes         *types.DiscordEmotes = nil
 	totalEmotesDownloaded atomic.Uint32        = atomic.Uint32{}
 	lastEmoteDownloaded   string               = ""
-
-	TotalEmotes int = 0
+	Format                                     = "avif"
+	TotalEmotes           int                  = 0
 )
 
 func GetEmoteList(userId string) (*[]types.ShortEmoteList, *types.Emotes) {
@@ -52,17 +52,17 @@ func GetEmoteList(userId string) (*[]types.ShortEmoteList, *types.Emotes) {
 		baseUrl := emote.Data.Host.URL
 
 		emoteFile := emote.Data.Host.Files[len(emote.Data.Host.Files)-1]
-		emoteFile.Name = "4x.avif"
+		emoteFile.Name = "4x." + Format
 
 		fileName := filepath.Join(
 			emotes.Username,
-			emote.Name+".avif")
+			emote.Name+"."+Format)
 
 		fileName = strings.Replace(fileName, ":", "Colon", 1)
 
 		shortEmoteList = append(shortEmoteList, types.ShortEmoteList{
 			FullUrl:    "https:" + baseUrl + "/" + emoteFile.Name,
-			Extension:  "avif",
+			Extension:  Format,
 			FilePath:   fileName,
 			EmoteName:  emote.Data.Name,
 			IsAnimated: emote.Data.Animated,
