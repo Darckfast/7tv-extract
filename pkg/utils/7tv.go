@@ -26,6 +26,7 @@ var (
 func GetEmoteList(userId string) (*[]types.ShortEmoteList, *types.Emotes) {
 	LoadDiscordJSON()
 
+	fmt.Println("https://7tv.io/v3/users/twitch/" + userId)
 	resp, err := http.Get("https://7tv.io/v3/users/twitch/" + userId)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -53,14 +54,16 @@ func GetEmoteList(userId string) (*[]types.ShortEmoteList, *types.Emotes) {
 		emoteFile := emote.Data.Host.Files[len(emote.Data.Host.Files)-1]
 		emoteFile.Name = "4x.avif"
 
-	fileName := filepath.Join(
-		username,
-		shortEmote.EmoteName+"."+shortEmote.Extension)
+		fileName := filepath.Join(
+			emotes.Username,
+			emote.Name+".avif")
+
+		fileName = strings.Replace(fileName, ":", "Colon", 1)
 
 		shortEmoteList = append(shortEmoteList, types.ShortEmoteList{
 			FullUrl:    "https:" + baseUrl + "/" + emoteFile.Name,
 			Extension:  "avif",
-            FilePath: fileName,
+			FilePath:   fileName,
 			EmoteName:  emote.Data.Name,
 			IsAnimated: emote.Data.Animated,
 			Size:       emoteFile.Size,
@@ -116,13 +119,7 @@ func DownloadEmote(
 
 	defer resp.Body.Close()
 
-	fileName := filepath.Join(
-		username,
-		shortEmote.EmoteName+"."+shortEmote.Extension)
-
-	fileName = strings.Replace(fileName, ":", "Colon", 1)
-
-	out, err := os.Create(fileName)
+	out, err := os.Create(shortEmote.FilePath)
 	if err != nil {
 		fmt.Println("Error creating file", err.Error())
 		wg.Done()

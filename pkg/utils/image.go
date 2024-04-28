@@ -2,6 +2,9 @@ package utils
 
 import (
 	"fmt"
+	"image"
+	"image/color/palette"
+	"image/draw"
 	"image/gif"
 	"image/png"
 	"os"
@@ -14,12 +17,7 @@ import (
 	"github.com/nfnt/resize"
 )
 
-var (
-// HasMagick                          = false
-// HasGifsicle                        = false
-// totalEmotesConverted atomic.Uint32 = atomic.Uint32{}
-// lastEmoteConverted   string        = ""
-)
+var mu sync.Mutex
 
 func ConvertFileNative(
 	shortEmote *types.ShortEmoteList,
@@ -33,6 +31,13 @@ func ConvertFileNative(
 	}()
 
 	defer os.Remove(shortEmote.FilePath)
+	extension := "png"
+
+	if shortEmote.IsAnimated {
+		extension = "gif"
+	}
+
+	outputFileName := strings.Replace(shortEmote.FilePath, "avif", extension, 1)
 
 	file, err := os.Open(shortEmote.FilePath)
 	if err != nil {
@@ -42,80 +47,50 @@ func ConvertFileNative(
 
 	defer file.Close()
 
-	img, err := avif.Decode(file)
-	if err != nil {
-		fmt.Println(shortEmote, err.Error())
-		panic(err)
-	}
+	if outputFileName[:3] == "png" {
+		mu.Lock()
+		img, err := avif.Decode(file)
+		if err != nil {
+			fmt.Println(shortEmote, err.Error())
+			panic(err)
+		}
+		mu.Unlock()
+		ResizeAndEncode(*shortEmote, outputFileName, 128, &img, nil)
+		finalFile, _ := os.Stat(outputFileName)
 
-	fmt.Println("Decoded")
-	extension := "png"
+		if finalFile.Size() > 256*1024 {
+			ResizeAndEncode(*shortEmote, outputFileName, 96, &img, nil)
+		}
 
-	if shortEmote.IsAnimated {
-		extension = "gif"
-	}
+		finalFile, _ = os.Stat(outputFileName)
 
-	outputFileName := strings.Replace(shortEmote.FilePath, "avif", extension, 1)
-	outFile, _ := os.Create(outputFileName)
-
-	defer outFile.Close()
-
-	newImg := resize.Resize(128, 0, img, resize.Lanczos3)
-
-	if extension == "png" {
-		png.Encode(outFile, newImg)
+		if finalFile.Size() > 256*1024 {
+			ResizeAndEncode(*shortEmote, outputFileName, 64, &img, nil)
+		}
 	} else {
-		gif.Encode(outFile, img, &gif.Options{NumColors: 255})
+		mu.Lock()
+		imgs, err := avif.DecodeAll(file)
+		if err != nil {
+			fmt.Println(shortEmote, err.Error())
+			panic(err)
+		}
+		mu.Unlock()
+		ResizeAndEncode(*shortEmote, outputFileName, 128, nil, imgs)
+		finalFile, _ := os.Stat(outputFileName)
+
+		if finalFile.Size() > 256*1024 {
+			ResizeAndEncode(*shortEmote, outputFileName, 96, nil, imgs)
+		}
+
+		finalFile, _ = os.Stat(outputFileName)
+
+		if finalFile.Size() > 256*1024 {
+			ResizeAndEncode(*shortEmote, outputFileName, 64, nil, imgs)
+		}
 	}
 
 	totalEmotesConverted.Add(1)
 	lastEmoteConverted = shortEmote.EmoteName
-
-	// if extension == "gif" && HasGifsicle {
-	// 	fileInfo, err := os.Stat(outputFileName)
-	// 	if err != nil {
-	// 		fmt.Println("Error stat file", outputFileName, err.Error())
-	// 		return
-	// 	}
-	//
-	// 	if fileInfo.Size() >= 256*1024 {
-	// 		fileGif, _ := os.Open(outputFileName)
-	//
-	// 		defer fileGif.Close()
-	//
-	// 		gifDecoded, err := gif.DecodeAll(fileGif)
-	// 		if err != nil {
-	// 			fmt.Println("Error decoding GIF", fileName, err.Error())
-	// 			return
-	// 		}
-	// 		totalFrams := len(gifDecoded.Image)
-	//
-	// 		for i := 0; i < totalFrams; i++ {
-	// 			if i%2 == 0 {
-	// 				continue
-	// 			}
-	//
-	// 			deleteArg := fmt.Sprintf("#%d", i)
-	// 			cmdGifslice := exec.Command("gifsicle",
-	// 				"-U",
-	// 				outputFileName,
-	// 				"--colors",
-	// 				"255",
-	// 				"--delete",
-	// 				deleteArg,
-	// 				"-o",
-	// 				outputFileName,
-	// 			)
-	//
-	// 			cmdGifslice.Stdout = &outb
-	// 			cmdGifslice.Stderr = &errb
-	//
-	// 			if err := cmdGifslice.Run(); err != nil {
-	// 				fmt.Println("Error while converting file", err.Error())
-	// 			}
-	// 		}
-	// 	}
-	// }
 
 	PrintLine(
 		fmt.Sprintf("\r[%d/%d] Converting emotes [ %s ]",
@@ -124,4 +99,35 @@ func ConvertFileNative(
 			lastEmoteConverted,
 		),
 	)
+}
+
+func ResizeAndEncode(
+	shortEmote types.ShortEmoteList,
+	outputFileName string,
+	size uint,
+	img *image.Image,
+	imgs *avif.AVIF,
+) {
+	outFile, _ := os.Create(outputFileName)
+
+	defer outFile.Close()
+
+	if outputFileName[:3] == "png" {
+		newImg := resize.Resize(size, 0, *img, resize.Lanczos3)
+		png.Encode(outFile, newImg)
+	} else {
+		var imgGif gif.GIF
+		customPalette := append(palette.WebSafe, image.Transparent)
+
+		for _, img := range imgs.Image {
+			resizedImg := resize.Resize(size, 0, img, resize.Lanczos3)
+			palettedImg := image.NewPaletted(resizedImg.Bounds(), customPalette)
+
+			draw.Draw(palettedImg, palettedImg.Rect, resizedImg, resizedImg.Bounds().Min, draw.Over)
+			imgGif.Image = append(imgGif.Image, palettedImg)
+			imgGif.Delay = append(imgGif.Delay, 0)
+		}
+
+		gif.EncodeAll(outFile, &imgGif)
+	}
 }

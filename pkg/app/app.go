@@ -37,17 +37,6 @@ func Run() {
 	fmt.Printf("Using %d threads\n", threads)
 	limiter := make(chan int, threads)
 
-	utils.CheckForMagick()
-	utils.CheckForGifsicle()
-
-	if !utils.HasMagick {
-		fmt.Println("For auto conversion first install ImageMagick https://imagemagick.org/script/download.php")
-	}
-
-	if !utils.HasGifsicle {
-		fmt.Println("For higher GIF compression first install https://www.lcdf.org/gifsicle/")
-	}
-
 	wg := sync.WaitGroup{}
 
 	for _, shortEmote := range *shortEmoteList {
@@ -60,8 +49,6 @@ func Run() {
 			limiter,
 			&wg,
 		)
-
-		break
 	}
 	wg.Wait()
 
@@ -75,7 +62,6 @@ func Run() {
 			limiter,
 			&wg,
 		)
-		break
 	}
 	wg.Wait()
 
