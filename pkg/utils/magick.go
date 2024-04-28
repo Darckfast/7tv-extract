@@ -68,6 +68,8 @@ func ConvertFile(
 
 	fileName = strings.Replace(fileName, ":", "Colon", 1)
 
+	defer os.Remove(fileName)
+
 	outputFileName := strings.Replace(fileName, "webp", extension, 1)
 	cmd := exec.Command("magick",
 		filepath.Join(path, fileName),
@@ -93,15 +95,16 @@ func ConvertFile(
 	lastEmoteConverted = shortEmote.EmoteName
 
 	if extension == "gif" && HasGifsicle {
-		fileInfo, _ := os.Stat(outputFileName)
+		fileInfo, err := os.Stat(outputFileName)
+		if err != nil {
+			fmt.Println("Error stat file", outputFileName, err.Error())
+			return
+		}
 
 		if fileInfo.Size() >= 256*1024 {
 			fileGif, _ := os.Open(outputFileName)
 
-			defer func() {
-				fileGif.Close()
-				os.Remove(fileName)
-			}()
+			defer fileGif.Close()
 
 			gifDecoded, err := gif.DecodeAll(fileGif)
 			if err != nil {

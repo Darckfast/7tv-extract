@@ -63,12 +63,11 @@ func Run() {
 	}
 	wg.Wait()
 
-	if utils.HasMagick {
 		for _, shortEmote := range *shortEmoteList {
 			limiter <- 1
 			wg.Add(1)
 
-			go utils.ConvertFile(
+			go utils.ConvertFileNative(
 				&shortEmote,
 				emotes.Username,
 				limiter,
@@ -76,7 +75,6 @@ func Run() {
 			)
 		}
 		wg.Wait()
-	}
 
 	fmt.Println("Completed", emotes.User.Username, tv7UserId)
 }

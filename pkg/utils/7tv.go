@@ -51,11 +51,11 @@ func GetEmoteList(userId string) (*[]types.ShortEmoteList, *types.Emotes) {
 		baseUrl := emote.Data.Host.URL
 
 		emoteFile := emote.Data.Host.Files[len(emote.Data.Host.Files)-1]
-		emoteFile.Name = "4x.webp"
+		emoteFile.Name = "4x.avif"
 
 		shortEmoteList = append(shortEmoteList, types.ShortEmoteList{
 			FullUrl:    "https:" + baseUrl + "/" + emoteFile.Name,
-			Extension:  "webp",
+			Extension:  "avif",
 			EmoteName:  emote.Data.Name,
 			IsAnimated: emote.Data.Animated,
 			Size:       emoteFile.Size,
