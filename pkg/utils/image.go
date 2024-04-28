@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"7tv-extract/pkg/types"
 
@@ -18,6 +19,10 @@ import (
 )
 
 var mu sync.Mutex
+var (
+	totalEmotesConverted atomic.Uint32 = atomic.Uint32{}
+	lastEmoteConverted   string        = ""
+)
 
 func ConvertFileNative(
 	shortEmote *types.ShortEmoteList,
