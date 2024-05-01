@@ -57,10 +57,8 @@ func Run() {
 	wg.Wait()
 
 	for _, shortEmote := range *shortEmoteList {
-
-        utils.DoConversion(&shortEmote)
+		utils.DoConversion(&shortEmote)
 	}
 
-	wg.Wait()
 	fmt.Println("Completed", emotes.User.Username, tv7UserId)
 }

@@ -5,10 +5,23 @@ jobs:
   build:
     name: 🏗️ Build
     environment: test
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest]
+    runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '^1.22'
 
+      - name: Test
+        run: pacman
+      - name: Test
+        run: choco
       - name: Build
-        run: go build  
-
+        run: go build 
+            
+      - name: Test
+        run: go test ./...

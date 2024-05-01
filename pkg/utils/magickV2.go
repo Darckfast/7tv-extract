@@ -18,8 +18,6 @@ var (
 )
 
 func InitMagick() {
-	imagick.Initialize()
-	// mw = imagick.NewMagickWand()
 }
 
 func DoConversion(shortEmote *types.ShortEmoteList) {
