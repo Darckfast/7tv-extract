@@ -3,13 +3,18 @@ package utils
 import (
 	"fmt"
 	"os"
+	"sync/atomic"
 
 	"7tv-extract/pkg/types"
 
 	"gopkg.in/gographics/imagick.v2/imagick"
 )
 
-var ResolutionsAttempt = []uint{128, 96, 64}
+var (
+	ResolutionsAttempt                 = []uint{128, 96, 64}
+	totalEmotesConverted atomic.Uint32 = atomic.Uint32{}
+	lastEmoteConverted   string        = ""
+)
 
 func InitMagick() {
 	imagick.Initialize()
