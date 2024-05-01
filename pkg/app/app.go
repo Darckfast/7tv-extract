@@ -10,8 +10,6 @@ import (
 	"sync"
 
 	"7tv-extract/pkg/utils"
-
-	"gopkg.in/gographics/imagick.v2/imagick"
 )
 
 func Run() {
@@ -55,14 +53,14 @@ func Run() {
 			wg.Done()
 		}()
 
-		imagick.Terminate()
 	}
 	wg.Wait()
 
-	utils.InitMagick()
 	for _, shortEmote := range *shortEmoteList {
-		utils.DoConversion(&shortEmote)
+
+        utils.DoConversion(&shortEmote)
 	}
 
+	wg.Wait()
 	fmt.Println("Completed", emotes.User.Username, tv7UserId)
 }

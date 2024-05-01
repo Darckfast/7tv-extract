@@ -14,10 +14,12 @@ var (
 	ResolutionsAttempt                 = []uint{128, 96, 64}
 	totalEmotesConverted atomic.Uint32 = atomic.Uint32{}
 	lastEmoteConverted   string        = ""
+	mw                   *imagick.MagickWand
 )
 
 func InitMagick() {
 	imagick.Initialize()
+	// mw = imagick.NewMagickWand()
 }
 
 func DoConversion(shortEmote *types.ShortEmoteList) {
@@ -44,7 +46,10 @@ func ConvertFileV2(
 	shortEmote *types.ShortEmoteList,
 	resolution uint,
 ) {
+	imagick.Initialize()
 	mw := imagick.NewMagickWand()
+
+	defer imagick.Terminate()
 	defer mw.Destroy()
 	mw.ReadImage(shortEmote.FullPath)
 
