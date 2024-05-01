@@ -21,7 +21,6 @@ jobs:
       - name: Build
         run: go build 
             
-      - name: Upload binary
-        uses: softprops/action-gh-release@v1
-        with:
-          files: 7tv-extract.exe 
+      - name: Test
+        run: go test ./...
+
