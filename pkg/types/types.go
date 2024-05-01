@@ -103,6 +103,8 @@ type ShortEmoteList struct {
 	FullUrl    string `json:"full_url"`
 	Extension  string `json:"extension"`
 	IsAnimated bool   `json:"is_animated"`
+	FullPath   string
+	OutputPath string
 	Size       int
 }
 
