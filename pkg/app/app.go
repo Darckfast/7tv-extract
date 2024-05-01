@@ -10,6 +10,8 @@ import (
 	"sync"
 
 	"7tv-extract/pkg/utils"
+
+	"gopkg.in/gographics/imagick.v2/imagick"
 )
 
 func Run() {
@@ -37,45 +39,29 @@ func Run() {
 	fmt.Printf("Using %d threads\n", threads)
 	limiter := make(chan int, threads)
 
-	utils.CheckForMagick()
-	utils.CheckForGifsicle()
-
-	if !utils.HasMagick {
-		fmt.Println("For auto conversion first install ImageMagick https://imagemagick.org/script/download.php")
-	}
-
-	if !utils.HasGifsicle {
-		fmt.Println("For higher GIF compression first install https://www.lcdf.org/gifsicle/")
-	}
-
 	wg := sync.WaitGroup{}
 
 	for _, shortEmote := range *shortEmoteList {
 		wg.Add(1)
 		limiter <- 1
 
-		go utils.DownloadEmote(
-			&shortEmote,
-			emotes.Username,
-			limiter,
-			&wg,
-		)
+		go func() {
+			utils.DownloadEmote(
+				&shortEmote,
+				emotes.Username,
+			)
+
+			<-limiter
+			wg.Done()
+		}()
+
+		imagick.Terminate()
 	}
 	wg.Wait()
 
-	if utils.HasMagick {
-		for _, shortEmote := range *shortEmoteList {
-			limiter <- 1
-			wg.Add(1)
-
-			go utils.ConvertFile(
-				&shortEmote,
-				emotes.Username,
-				limiter,
-				&wg,
-			)
-		}
-		wg.Wait()
+	utils.InitMagick()
+	for _, shortEmote := range *shortEmoteList {
+		utils.DoConversion(&shortEmote)
 	}
 
 	fmt.Println("Completed", emotes.User.Username, tv7UserId)
