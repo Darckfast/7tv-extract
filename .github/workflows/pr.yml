@@ -16,12 +16,26 @@ jobs:
         with:
           go-version: '^1.22'
 
-      - name: Test
-        run: pacman
-      - name: Test
-        run: choco
-      - name: Build
-        run: go build 
+      - name: Install msys2
+        run: choco install -y msys2
+
+      - name: Install deps
+        run: |
+          yes | pacman -Syuu 
+          yes | pacman -S mingw-w64-x86_64-gcc 
+          yes | pacman -S mingw-w64-x86_64-pkg-config 
+          yes | pacman -S mingw-w64-x86_64-zlib 
+          yes | pacman -S mingw-w64-x86_64-imagemagick
+
+      - name: Set envs
+        run: |
+          set PATH=C:\msys64\mingw64\bin;%PATH%
+          set PKG_CONFIG_PATH=C:\msys64\mingw64\lib\pkgconfig
+          set MAGICK_CODER_MODULE_PATH=C:\msys64\mingw64\lib\ImageMagick-7.0.6\modules-Q16HDRI\coders
+          go build gopkg.in/gographics/imagick.v3/imagick
             
       - name: Test
         run: go test ./...
+
+      # - name: Build
+      #   run: go build 
