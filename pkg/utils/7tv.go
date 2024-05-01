@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"sync"
 	"sync/atomic"
 
 	"7tv-extract/pkg/types"
@@ -53,9 +52,23 @@ func GetEmoteList(userId string) (*[]types.ShortEmoteList, *types.Emotes) {
 		emoteFile := emote.Data.Host.Files[len(emote.Data.Host.Files)-1]
 		emoteFile.Name = "4x.webp"
 
+		outExtension := "png"
+
+		if emote.Data.Animated {
+			outExtension = "gif"
+		}
+
+		fileName := filepath.Join(
+			emotes.Username,
+			emote.Name+".webp")
+
+		fileName = strings.Replace(fileName, ":", "Colon", 1)
+		outFileName := fileName[:len(fileName)-4] + outExtension
+
 		shortEmoteList = append(shortEmoteList, types.ShortEmoteList{
 			FullUrl:    "https:" + baseUrl + "/" + emoteFile.Name,
-			Extension:  "webp",
+			FullPath:   fileName,
+			OutputPath: outFileName,
 			EmoteName:  emote.Data.Name,
 			IsAnimated: emote.Data.Animated,
 			Size:       emoteFile.Size,
@@ -99,40 +112,27 @@ func LoadDiscordJSON() {
 func DownloadEmote(
 	shortEmote *types.ShortEmoteList,
 	username string,
-	limiter chan int,
-	wg *sync.WaitGroup,
 ) {
 	resp, err := http.Get(shortEmote.FullUrl)
 	if err != nil {
 		fmt.Println("Error making the request", err.Error())
-		wg.Done()
 		return
 	}
 
 	defer resp.Body.Close()
 
-	fileName := filepath.Join(
-		username,
-		shortEmote.EmoteName+"."+shortEmote.Extension)
+	totalEmotesDownloaded.Add(1)
+	lastEmoteDownloaded = shortEmote.EmoteName
 
-	fileName = strings.Replace(fileName, ":", "Colon", 1)
-
-	out, err := os.Create(fileName)
+	out, err := os.Create(shortEmote.FullPath)
 	if err != nil {
 		fmt.Println("Error creating file", err.Error())
-		wg.Done()
 		return
 	}
 
-	defer func() {
-		out.Close()
-		wg.Done()
-		<-limiter
-	}()
+	defer out.Close()
 
 	io.Copy(out, resp.Body)
-	totalEmotesDownloaded.Add(1)
-	lastEmoteDownloaded = shortEmote.EmoteName
 
 	PrintLine(
 		fmt.Sprintf("\r[%d/%d] Downloading emotes [ %s ]",
