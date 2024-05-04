@@ -2,14 +2,15 @@ name: 🎆 PR
 on: [pull_request]
 
 jobs:
-  build:
-    name: 🏗️ Build
+  test-win:
+    name: ✅ Test on Windows
     environment: test
+    timeout-minutes: 10
     strategy:
       fail-fast: false
-      matrix:
-        platform: [windows-latest]
-    runs-on: ${{ matrix.platform }}
+    runs-on: windows-latest
+    env:
+      CGO_CFLAGS_ALLOW: '-Xpreprocessor'
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v5
@@ -21,10 +22,12 @@ jobs:
           location: D:\
 
       - name: Update deps
+        continue-on-error: true
         shell: msys2 {0}
         run: yes | pacman -Syuu 
           
       - name: Install deps
+        continue-on-error: true
         if: always()
         shell: msys2 {0}
         run: |
@@ -34,9 +37,40 @@ jobs:
         if: always()
         shell: cmd
         run: |
-          dir D:\msys64
           set PATH=D:\msys64\mingw64\bin;%PATH%
           set PKG_CONFIG_PATH=D:\msys64\mingw64\lib\pkgconfig
           set MAGICK_CODER_MODULE_PATH=D:\msys64\mingw64\lib\ImageMagick-7.1.1\modules-Q16HDRI\coders
           go test ./... -v
+
+  test-lin:
+    name: ✅ Test on Linux
+    environment: test
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+    env:
+      CGO_CFLAGS_ALLOW: '-Xpreprocessor'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '^1.22'
+
+      - name: Install deps
+        run: sudo apt-get install libmagickwand-dev -y
+          
+      - name: Install imagemagick 7
+        run: |
+          wget https://imagemagick.org/archive/ImageMagick.tar.gz
+          tar xvzf ImageMagick.tar.gz 
+          cd ImageMagick-7*
+          ./configure
+          make
+          sudo make install
+          sudo ldconfig /usr/local/lib
+          magick -version
+
+      - name: Run tests 
+        run: go test ./... -v
 
