@@ -6,22 +6,87 @@ on:
   workflow_dispatch:
 
 jobs:
-  release:
-    name: 📦 Release executables
+  release-win:
+    name: 📦 Release executables (win-x86_64)
     environment: prd
     permissions: write-all
+    timeout-minutes: 5
     strategy:
       fail-fast: false
-      matrix:
-        platform: [windows-latest]
-    runs-on: ${{ matrix.platform }}
+    runs-on: windows-latest
+    env:
+      CGO_CFLAGS_ALLOW: '-Xpreprocessor'
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '^1.22'
 
-      - name: Build
-        run: go build 
-            
+      - uses: msys2/setup-msys2@v2
+        with:
+          location: D:\
+
+      - name: Update deps
+        continue-on-error: true
+        shell: msys2 {0}
+        run: yes | pacman -Syuu 
+          
+      - name: Install deps
+        continue-on-error: true
+        if: always()
+        shell: msys2 {0}
+        run: |
+          yes | pacman -S mingw-w64-x86_64-gcc  mingw-w64-x86_64-pkg-config mingw-w64-x86_64-zlib mingw-w64-x86_64-imagemagick
+
+      - name: Build 
+        if: always()
+        shell: cmd
+        run: |
+          set PATH=D:\msys64\mingw64\bin;%PATH%
+          set PKG_CONFIG_PATH=D:\msys64\mingw64\lib\pkgconfig
+          set MAGICK_CODER_MODULE_PATH=D:\msys64\mingw64\lib\ImageMagick-7.1.1\modules-Q16HDRI\coders
+          go build
+
       - name: Upload binary
         uses: softprops/action-gh-release@v1
         with:
-          files: 7tv-extract.exe 
+          files: 7tv-extract.exe
+
+
+  # release-lin:
+  #   name: 📦 Release executables (linux-x86_64)
+  #   timeout-minutes: 5
+  #   environment: prd
+  #   permissions: write-all
+  #   strategy:
+  #     fail-fast: false
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     CGO_CFLAGS_ALLOW: '-Xpreprocessor'
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-go@v5
+  #       with:
+  #         go-version: '^1.22'
+  #
+  #     - name: Install deps
+  #       run: sudo apt-get install libmagickwand-dev -y
+  #         
+  #     - name: Install imagemagick 7
+  #       run: |
+  #         wget https://imagemagick.org/archive/ImageMagick.tar.gz
+  #         tar xvzf ImageMagick.tar.gz 
+  #         cd ImageMagick-7*
+  #         ./configure
+  #         make
+  #         sudo make install
+  #         sudo ldconfig /usr/local/lib
+  #         magick -version
+  #
+  #     - name: Build 
+  #       run: go build
+  #
+  #     - name: Upload binary
+  #       uses: softprops/action-gh-release@v1
+  #       with:
+  #         files: 7tv-extract
