@@ -53,40 +53,40 @@ jobs:
           files: 7tv-extract.exe
 
 
-  release-lin:
-    name: 📦 Release executables (linux-x86_64)
-    timeout-minutes: 5
-    environment: prd
-    permissions: write-all
-    strategy:
-      fail-fast: false
-    runs-on: ubuntu-latest
-    env:
-      CGO_CFLAGS_ALLOW: '-Xpreprocessor'
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v5
-        with:
-          go-version: '^1.22'
-
-      - name: Install deps
-        run: sudo apt-get install libmagickwand-dev -y
-          
-      - name: Install imagemagick 7
-        run: |
-          wget https://imagemagick.org/archive/ImageMagick.tar.gz
-          tar xvzf ImageMagick.tar.gz 
-          cd ImageMagick-7*
-          ./configure
-          make
-          sudo make install
-          sudo ldconfig /usr/local/lib
-          magick -version
-
-      - name: Build 
-        run: go build
-
-      - name: Upload binary
-        uses: softprops/action-gh-release@v1
-        with:
-          files: 7tv-extract
+  # release-lin:
+  #   name: 📦 Release executables (linux-x86_64)
+  #   timeout-minutes: 5
+  #   environment: prd
+  #   permissions: write-all
+  #   strategy:
+  #     fail-fast: false
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     CGO_CFLAGS_ALLOW: '-Xpreprocessor'
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-go@v5
+  #       with:
+  #         go-version: '^1.22'
+  #
+  #     - name: Install deps
+  #       run: sudo apt-get install libmagickwand-dev -y
+  #         
+  #     - name: Install imagemagick 7
+  #       run: |
+  #         wget https://imagemagick.org/archive/ImageMagick.tar.gz
+  #         tar xvzf ImageMagick.tar.gz 
+  #         cd ImageMagick-7*
+  #         ./configure
+  #         make
+  #         sudo make install
+  #         sudo ldconfig /usr/local/lib
+  #         magick -version
+  #
+  #     - name: Build 
+  #       run: go build
+  #
+  #     - name: Upload binary
+  #       uses: softprops/action-gh-release@v1
+  #       with:
+  #         files: 7tv-extract
