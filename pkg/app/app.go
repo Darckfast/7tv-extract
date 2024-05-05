@@ -61,5 +61,11 @@ func Run(tv7UserId string) (int, string) {
 	totalEmotes := len(*shortEmoteList)
 	fmt.Println("Completed", emotes.User.Username, tv7UserId, totalEmotes)
 
-	return totalEmotes, (*shortEmoteList)[0].DirPath
+	dirPath := ""
+
+	if totalEmotes > 0 {
+		dirPath = (*shortEmoteList)[0].DirPath
+	}
+
+	return totalEmotes, dirPath
 }
