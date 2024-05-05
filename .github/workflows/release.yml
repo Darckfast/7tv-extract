@@ -45,13 +45,12 @@ jobs:
           set PATH=D:\msys64\mingw64\bin;%PATH%
           set PKG_CONFIG_PATH=D:\msys64\mingw64\lib\pkgconfig
           set MAGICK_CODER_MODULE_PATH=D:\msys64\mingw64\lib\ImageMagick-7.1.1\modules-Q16HDRI\coders
-          go build
+          go build -o 7tv-extract-win-x86_64.exe
 
       - name: Upload binary
         uses: softprops/action-gh-release@v1
         with:
-          files: 7tv-extract.exe
-
+          files: 7tv-extract-win-x86_64.exe
 
   # release-lin:
   #   name: 📦 Release executables (linux-x86_64)
