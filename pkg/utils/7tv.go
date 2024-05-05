@@ -23,8 +23,6 @@ var (
 )
 
 func GetEmoteList(userId string) (*[]types.ShortEmoteList, *types.Emotes) {
-	LoadDiscordJSON()
-
 	resp, err := http.Get("https://7tv.io/v3/users/twitch/" + userId)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -38,14 +36,7 @@ func GetEmoteList(userId string) (*[]types.ShortEmoteList, *types.Emotes) {
 
 	shortEmoteList := []types.ShortEmoteList{}
 
-	skipped := 0
 	for _, emote := range emotes.EmoteSet.Emotes {
-		if IsDuplicate(emote.Name) {
-			skipped = skipped + 1
-			PrintLine(fmt.Sprintf("\rSkipping duplicate [ %s ] %d", emote.Name, skipped))
-			continue
-		}
-
 		TotalEmotes = TotalEmotes + 1
 		baseUrl := emote.Data.Host.URL
 
@@ -68,6 +59,7 @@ func GetEmoteList(userId string) (*[]types.ShortEmoteList, *types.Emotes) {
 		shortEmoteList = append(shortEmoteList, types.ShortEmoteList{
 			FullUrl:    "https:" + baseUrl + "/" + emoteFile.Name,
 			FullPath:   fileName,
+			DirPath:    emotes.Username,
 			OutputPath: outFileName,
 			EmoteName:  emote.Data.Name,
 			IsAnimated: emote.Data.Animated,
@@ -84,35 +76,14 @@ func GetEmoteList(userId string) (*[]types.ShortEmoteList, *types.Emotes) {
 	return &shortEmoteList, &emotes
 }
 
-func IsDuplicate(emoteName string) bool {
-	if discordEmotes == nil {
-		return false
-	}
-
-	for _, discEmote := range *discordEmotes {
-		if discEmote.Name == emoteName {
-			return true
-		}
-	}
-
-	return false
-}
-
-func LoadDiscordJSON() {
-	fmt.Println("Looking for discord.json")
-
-	if _, err := os.Stat("discord.json"); err == nil {
-		content, _ := os.ReadFile("discord.json")
-		json.Unmarshal(content, &discordEmotes)
-
-		fmt.Println("Found discord.json, ignoring duplicates")
-	}
-}
-
 func DownloadEmote(
 	shortEmote *types.ShortEmoteList,
-	username string,
 ) {
+	totalEmotesDownloaded.Add(1)
+	lastEmoteDownloaded = shortEmote.EmoteName
+
+	os.MkdirAll(shortEmote.DirPath, os.ModePerm)
+
 	resp, err := http.Get(shortEmote.FullUrl)
 	if err != nil {
 		fmt.Println("Error making the request", err.Error())
@@ -120,9 +91,6 @@ func DownloadEmote(
 	}
 
 	defer resp.Body.Close()
-
-	totalEmotesDownloaded.Add(1)
-	lastEmoteDownloaded = shortEmote.EmoteName
 
 	out, err := os.Create(shortEmote.FullPath)
 	if err != nil {

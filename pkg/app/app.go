@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -30,8 +29,6 @@ func Run() {
 		return
 	}
 
-	os.MkdirAll(filepath.Join(emotes.Username), os.ModePerm)
-
 	threads := runtime.NumCPU()
 
 	fmt.Printf("Using %d threads\n", threads)
@@ -46,7 +43,6 @@ func Run() {
 		go func() {
 			utils.DownloadEmote(
 				&shortEmote,
-				emotes.Username,
 			)
 
 			<-limiter
