@@ -54,12 +54,14 @@ func GetEmoteList(userId string) (*[]types.ShortEmoteList, *types.Emotes) {
 			emote.Name+".webp")
 
 		fileName = strings.Replace(fileName, ":", "Colon", 1)
+		currentDir, _ := os.Getwd()
+		dirPath := filepath.Join(currentDir, emotes.Username)
 		outFileName := fileName[:len(fileName)-4] + outExtension
 
 		shortEmoteList = append(shortEmoteList, types.ShortEmoteList{
 			FullUrl:    "https:" + baseUrl + "/" + emoteFile.Name,
 			FullPath:   fileName,
-			DirPath:    emotes.Username,
+			DirPath:    dirPath,
 			OutputPath: outFileName,
 			EmoteName:  emote.Data.Name,
 			IsAnimated: emote.Data.Animated,

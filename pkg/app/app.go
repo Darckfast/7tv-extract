@@ -11,8 +11,10 @@ import (
 	"7tv-extract/pkg/utils"
 )
 
-func Run() {
-	tv7UserId := os.Args[1:]
+func Run(tv7UserId string) (int, string) {
+	if len(tv7UserId) == 0 {
+		tv7UserId = os.Args[1:][0]
+	}
 
 	if len(tv7UserId) == 0 {
 		reader := bufio.NewReader(os.Stdin)
@@ -21,15 +23,15 @@ func Run() {
 
 		userId = strings.TrimSpace(userId)
 
-		tv7UserId = append(tv7UserId, userId)
+		tv7UserId = userId
 	}
 
-	shortEmoteList, emotes := utils.GetEmoteList(tv7UserId[0])
+	shortEmoteList, emotes := utils.GetEmoteList(tv7UserId)
 	if shortEmoteList == nil {
-		return
+		return 0, ""
 	}
 
-	threads := runtime.NumCPU()
+	threads := runtime.NumCPU() + 1
 
 	fmt.Printf("Using %d threads\n", threads)
 	limiter := make(chan int, threads)
@@ -56,5 +58,8 @@ func Run() {
 		utils.DoConversion(&shortEmote)
 	}
 
-	fmt.Println("Completed", emotes.User.Username, tv7UserId)
+	totalEmotes := len(*shortEmoteList)
+	fmt.Println("Completed", emotes.User.Username, tv7UserId, totalEmotes)
+
+	return totalEmotes, (*shortEmoteList)[0].DirPath
 }

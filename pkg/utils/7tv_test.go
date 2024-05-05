@@ -33,5 +33,5 @@ func TestDownloadEmoteList(t *testing.T) {
 		assert.NotZero(t, fs.Size())
 	}
 
-    defer os.Remove("darckfast")
+	defer os.RemoveAll("darckfast")
 }
