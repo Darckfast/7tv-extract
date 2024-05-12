@@ -104,6 +104,7 @@ type ShortEmoteList struct {
 	Extension  string `json:"extension"`
 	IsAnimated bool   `json:"is_animated"`
 	FullPath   string
+	DirPath    string
 	OutputPath string
 	Size       int
 }

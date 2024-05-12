@@ -17,5 +17,5 @@ func PrintLine(text string) {
 		charTotal = 0
 	}
 
-	fmt.Printf("\r%s %s", text, strings.Repeat("#", charTotal))
+	fmt.Printf("\r%s %s", text, strings.Repeat(" ", charTotal))
 }

@@ -24,6 +24,8 @@ func DoConversion(shortEmote *types.ShortEmoteList) {
 	totalEmotesConverted.Add(1)
 	lastEmoteConverted = shortEmote.EmoteName
 
+    defer os.Remove(shortEmote.FullPath)
+
 	if shortEmote.Size > 256*1024*5 {
 		ConvertFileV2(shortEmote, 64)
 		return
