@@ -5,7 +5,7 @@ go 1.22
 require (
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/term v0.19.0
-	gopkg.in/gographics/imagick.v3 v3.5.3
+	gopkg.in/gographics/imagick.v3 v3.6.0
 )
 
 require (
