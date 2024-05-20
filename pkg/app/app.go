@@ -12,6 +12,11 @@ import (
 )
 
 func Run(tv7UserId string) (int, string) {
+	if len(tv7UserId) == 0 && len(os.Args) == 1 {
+		fmt.Println("No user id")
+		return 0, ""
+	}
+
 	if len(tv7UserId) == 0 {
 		tv7UserId = os.Args[1:][0]
 	}
@@ -52,6 +57,7 @@ func Run(tv7UserId string) (int, string) {
 		}()
 
 	}
+
 	wg.Wait()
 
 	for _, shortEmote := range *shortEmoteList {

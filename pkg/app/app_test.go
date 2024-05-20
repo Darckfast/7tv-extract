@@ -22,3 +22,4 @@ func TestAppRun(t *testing.T) {
 
 	assert.Equal(t, len(files), totalEmotes)
 }
+
