@@ -47,10 +47,13 @@ jobs:
           set MAGICK_CODER_MODULE_PATH=D:\msys64\mingw64\lib\ImageMagick-7.1.1\modules-Q16HDRI\coders
           go build -o 7tv-extract-win-x86_64.exe
 
+      - name: Zip
+        run: zip 7tv-extract-win-x86_64.exe libMagickCore-7.Q16HDRI-10.dll libMagickWand-7.Q16HDRI-10.dll 7tv-extract
+          
       - name: Upload binary
         uses: softprops/action-gh-release@v1
         with:
-          files: 7tv-extract-win-x86_64.exe
+          files: 7tv-extract
 
   # release-lin:
   #   name: 📦 Release executables (linux-x86_64)
