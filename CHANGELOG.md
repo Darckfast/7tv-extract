@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.1.1](https://github.com/Darckfast/7tv-extract/compare/v0.1.0...v0.1.1) (2024-05-20)
+
+
+### Bug Fixes
+
+* fixed sum ([7caaf29](https://github.com/Darckfast/7tv-extract/commit/7caaf29f6f237bbd97771dad7de977138baf9cf2))
+
+
+### Miscellaneous
+
+* add check to avoid nil ([477e824](https://github.com/Darckfast/7tv-extract/commit/477e82485c40ed6e4029f2e0c7cb264a84613e97))
+* add dlls on zip ([881a57f](https://github.com/Darckfast/7tv-extract/commit/881a57f74f6acb3b104ae7e07f8ee07b8e17cd0f))
+* **deps:** bump golang.org/x/term from 0.19.0 to 0.20.0 ([72e702d](https://github.com/Darckfast/7tv-extract/commit/72e702da6d0db3a796f9ac1770eab86340b9ff58))
+* **deps:** bump gopkg.in/gographics/imagick.v3 from 3.5.3 to 3.6.0 ([320a6ca](https://github.com/Darckfast/7tv-extract/commit/320a6ca7f6e06e0241ed1fc01861540fd469ee3c))
+* replaced # with spaces ([d3fbd78](https://github.com/Darckfast/7tv-extract/commit/d3fbd78ec3db1b45540b8b0675d5520a89e88fd4))
+* updated executable name ([fe9d04e](https://github.com/Darckfast/7tv-extract/commit/fe9d04e3be9d56b0cba480f4efbe771b0f14fc16))
+
 ## [0.1.0](https://github.com/Darckfast/7tv-extract/compare/v0.0.9...v0.1.0) (2024-05-04)
 
 
