@@ -48,7 +48,7 @@ jobs:
           go build -o 7tv-extract-win-x86_64.exe
 
       - name: Zip
-        run: zip 7tv-extract-win-x86_64.exe libMagickCore-7.Q16HDRI-10.dll libMagickWand-7.Q16HDRI-10.dll 7tv-extract
+        run: tar -a -c -f 7tv-extract.zip 7tv-extract-win-x86_64.exe *.dll
           
       - name: Upload binary
         uses: softprops/action-gh-release@v1
