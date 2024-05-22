@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/Darckfast/7tv-extract/compare/v0.1.1...v0.1.2) (2024-05-22)
+
+
+### Bug Fixes
+
+* fixed CD workflow ([501d61a](https://github.com/Darckfast/7tv-extract/commit/501d61a66c7f253d3637c5ec868cc4672d67d8ce))
+
 ## [0.1.1](https://github.com/Darckfast/7tv-extract/compare/v0.1.0...v0.1.1) (2024-05-20)
 
 
