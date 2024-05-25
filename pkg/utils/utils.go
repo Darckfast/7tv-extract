@@ -57,13 +57,17 @@ func Progress(curr, total int) {
 	termWidth, _, _ := term.GetSize(fd)
 	numProg := fmt.Sprintf("[%d/%d] ", curr, total)
 	charTotal := termWidth - len(numProg)
-	prog := int((float32(curr) / float32(total)) * float32(charTotal))
 
 	if charTotal < 0 {
 		charTotal = 0
 	}
 
-	spacesChars := strings.Repeat(" ", charTotal-prog)
+	prog := int((float32(curr) / float32(total)) * float32(charTotal))
+	emptyChars := charTotal - prog
+	if emptyChars < 0 {
+		emptyChars = 0
+	}
+	spacesChars := strings.Repeat(" ", emptyChars)
 	progChars := strings.Repeat(INFO_FG_STYLE.Render("░"), prog)
 
 	fmt.Printf("\r%s%s%s", numProg, progChars, spacesChars)
