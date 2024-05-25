@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 
 	"7tv-extract/pkg/types"
@@ -15,6 +16,7 @@ var (
 	lastEmoteConverted string = ""
 	MAX_SIZE_LIMIT            = 1024 * 1024 * 5
 	HARD_SIZE_LIMIT    int64  = 256 * 1024
+    mw = imagick.NewMagickWand()
 )
 
 func DoConversion(shortEmote *types.ShortEmoteList) {
@@ -31,7 +33,11 @@ func DoConversion(shortEmote *types.ShortEmoteList) {
 	for _, resolution := range ResolutionsAttempt {
 		ConvertFileV2(shortEmote, resolution)
 
-		fs, _ := os.Stat(shortEmote.OutputPath)
+		fs, err := os.Stat(shortEmote.OutputPath)
+		if err != nil {
+			fmt.Println(err.Error())
+			break
+		}
 
 		if fs.Size() <= HARD_SIZE_LIMIT {
 			break
@@ -43,11 +49,7 @@ func ConvertFileV2(
 	shortEmote *types.ShortEmoteList,
 	resolution uint,
 ) {
-	imagick.Initialize()
-	mw := imagick.NewMagickWand()
-
-	defer imagick.Terminate()
-	defer mw.Destroy()
+	defer mw.Clear()
 
 	mw.ReadImage(shortEmote.FullPath)
 	mw.CoalesceImages()
