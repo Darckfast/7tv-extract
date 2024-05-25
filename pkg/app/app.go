@@ -9,6 +9,8 @@ import (
 	"sync"
 
 	"7tv-extract/pkg/utils"
+
+	"gopkg.in/gographics/imagick.v3/imagick"
 )
 
 func Run(tv7UserId string) (int, string) {
@@ -58,6 +60,7 @@ func Run(tv7UserId string) (int, string) {
 
 	utils.Info("Converting emotes")
 
+	imagick.Initialize()
 	for _, shortEmote := range *shortEmoteList {
 		utils.DoConversion(&shortEmote)
 	}
