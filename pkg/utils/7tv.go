@@ -104,11 +104,5 @@ func DownloadEmote(
 
 	io.Copy(out, resp.Body)
 
-	PrintLine(
-		fmt.Sprintf("\r[%d/%d] Downloading emotes [ %s ]",
-			totalEmotesDownloaded.Load(),
-			TotalEmotes,
-			lastEmoteDownloaded,
-		),
-	)
+	Progress(int(totalEmotesDownloaded.Load()), TotalEmotes)
 }
