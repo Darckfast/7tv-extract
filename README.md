@@ -2,7 +2,7 @@
 
 # 7TV extract
 
-Given a user id, downloads all emotes and convert them to GIFs and PNGs
+Given a user id, downloads all emotes of their main profile and convert them to GIFs and PNGs
 
 ```
 7tv-extract <user-id>
