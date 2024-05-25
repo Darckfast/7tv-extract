@@ -2,7 +2,6 @@ package utils
 
 import (
 	"os"
-	"sync/atomic"
 
 	"7tv-extract/pkg/types"
 
@@ -10,21 +9,23 @@ import (
 )
 
 var (
-	ResolutionsAttempt                 = []uint{128, 96, 64}
-	totalEmotesConverted atomic.Uint32 = atomic.Uint32{}
-	lastEmoteConverted   string        = ""
-	MAX_SIZE_LIMIT        = 256 * 1024 * 5
-	HARD_SIZE_LIMIT int64 = 256 * 1024
+	ResolutionsAttempt        = []uint{128, 96, 64}
+	emotesConverted           = 0
+	emotesSkipped             = 0
+	lastEmoteConverted string = ""
+	MAX_SIZE_LIMIT            = 1024 * 1024 * 5
+	HARD_SIZE_LIMIT    int64  = 256 * 1024
+	mw                        = imagick.NewMagickWand()
 )
 
 func DoConversion(shortEmote *types.ShortEmoteList) {
-	totalEmotesConverted.Add(1)
+	emotesConverted = emotesConverted + 1
 	lastEmoteConverted = shortEmote.EmoteName
 
 	defer os.Remove(shortEmote.FullPath)
 
 	if shortEmote.Size > MAX_SIZE_LIMIT {
-		ConvertFileV2(shortEmote, 64)
+		emotesSkipped = emotesSkipped + 1
 		return
 	}
 
@@ -38,8 +39,6 @@ func DoConversion(shortEmote *types.ShortEmoteList) {
 		}
 	}
 }
-
-var mw = imagick.NewMagickWand()
 
 func ConvertFileV2(
 	shortEmote *types.ShortEmoteList,
@@ -59,5 +58,5 @@ func ConvertFileV2(
 		mw.WriteImage(shortEmote.OutputPath)
 	}
 
-	Progress(int(totalEmotesConverted.Load()), TotalEmotes)
+	Progress(emotesConverted, TotalEmotes)
 }
