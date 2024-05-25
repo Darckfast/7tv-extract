@@ -15,7 +15,6 @@ var (
 	lastEmoteConverted string = ""
 	MAX_SIZE_LIMIT            = 1024 * 1024 * 5
 	HARD_SIZE_LIMIT    int64  = 256 * 1024
-	mw                        = imagick.NewMagickWand()
 )
 
 func DoConversion(shortEmote *types.ShortEmoteList) {
@@ -44,7 +43,11 @@ func ConvertFileV2(
 	shortEmote *types.ShortEmoteList,
 	resolution uint,
 ) {
-	defer mw.Clear()
+	imagick.Initialize()
+	mw := imagick.NewMagickWand()
+
+	defer imagick.Terminate()
+	defer mw.Destroy()
 
 	mw.ReadImage(shortEmote.FullPath)
 	mw.CoalesceImages()
