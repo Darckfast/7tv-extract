@@ -15,9 +15,9 @@ import (
 )
 
 var (
-	discordEmotes         *types.DiscordEmotes = nil
-	totalEmotesDownloaded atomic.Uint32        = atomic.Uint32{}
-	lastEmoteDownloaded   string               = ""
+	discordEmotes       *types.DiscordEmotes = nil
+	emotesDownloaded    atomic.Uint32        = atomic.Uint32{}
+	lastEmoteDownloaded string               = ""
 
 	TotalEmotes int = 0
 )
@@ -73,7 +73,7 @@ func GetEmoteList(userId string) (*[]types.ShortEmoteList, *types.Emotes) {
 		return shortEmoteList[i].Size < shortEmoteList[j].Size
 	})
 
-	fmt.Println("")
+	fmt.Println()
 
 	return &shortEmoteList, &emotes
 }
@@ -81,7 +81,7 @@ func GetEmoteList(userId string) (*[]types.ShortEmoteList, *types.Emotes) {
 func DownloadEmote(
 	shortEmote *types.ShortEmoteList,
 ) {
-	totalEmotesDownloaded.Add(1)
+	emotesDownloaded.Add(1)
 	lastEmoteDownloaded = shortEmote.EmoteName
 
 	os.MkdirAll(shortEmote.DirPath, os.ModePerm)
@@ -104,11 +104,5 @@ func DownloadEmote(
 
 	io.Copy(out, resp.Body)
 
-	PrintLine(
-		fmt.Sprintf("\r[%d/%d] Downloading emotes [ %s ]",
-			totalEmotesDownloaded.Load(),
-			TotalEmotes,
-			lastEmoteDownloaded,
-		),
-	)
+	Progress(int(emotesDownloaded.Load()), TotalEmotes)
 }

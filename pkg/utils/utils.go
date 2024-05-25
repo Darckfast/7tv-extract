@@ -5,17 +5,70 @@ import (
 	"os"
 	"strings"
 
+	"github.com/charmbracelet/lipgloss"
 	"golang.org/x/term"
 )
 
-func PrintLine(text string) {
+var (
+	PINK_COLOR = lipgloss.Color("#f629d7")
+	PINK_STYLE = lipgloss.
+			NewStyle().
+			Bold(true).
+			Foreground(PINK_COLOR)
+
+	INFO_COLOR = lipgloss.Color("#29b6f6")
+	INFO_STYLE = lipgloss.
+			NewStyle().
+			Bold(true)
+
+	INFO_FG_STYLE = lipgloss.
+			NewStyle().
+			Bold(true).
+			Foreground(INFO_COLOR)
+
+	INFO_HG_STYLE = lipgloss.
+			NewStyle().
+			Bold(true).
+			Foreground(lipgloss.Color("#000000")).
+			Background(INFO_COLOR)
+
+	WARN_COLOR = lipgloss.Color("#ef45ab")
+	WARN_STYLE = lipgloss.
+			NewStyle().
+			Bold(true).
+			Foreground(lipgloss.Color("#fff")).
+			Background(WARN_COLOR)
+)
+
+func Highlight(text string) {
+	fmt.Printf("%s\n", PINK_STYLE.Render(text))
+}
+
+func Info(text string) {
+	fmt.Printf("%s\n", INFO_STYLE.Render(text))
+}
+
+func Warn(text string) {
+	fmt.Printf("%s\n", WARN_STYLE.Render(text))
+}
+
+func Progress(curr, total int) {
 	fd := int(os.Stdout.Fd())
 	termWidth, _, _ := term.GetSize(fd)
-	charTotal := termWidth - len(text) - 1
+	numProg := fmt.Sprintf("[%d/%d] ", curr, total)
+	charTotal := termWidth - len(numProg)
 
 	if charTotal < 0 {
 		charTotal = 0
 	}
 
-	fmt.Printf("\r%s %s", text, strings.Repeat(" ", charTotal))
+	prog := int((float32(curr) / float32(total)) * float32(charTotal))
+	emptyChars := charTotal - prog
+	if emptyChars < 0 {
+		emptyChars = 0
+	}
+	spacesChars := strings.Repeat(" ", emptyChars)
+	progChars := strings.Repeat(INFO_FG_STYLE.Render("░"), prog)
+
+	fmt.Printf("\r%s%s%s", numProg, progChars, spacesChars)
 }

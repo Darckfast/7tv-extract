@@ -1,8 +1,8 @@
 name: 🏷️ Release
 on:
-  push:
-    tags:
-      - 'v*'
+  # push:
+  #   tags:
+  #     - 'v*'
   workflow_dispatch:
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '^1.22'
-
+      
       - uses: msys2/setup-msys2@v2
         with:
           location: D:\
@@ -36,24 +36,29 @@ jobs:
         if: always()
         shell: msys2 {0}
         run: |
-          yes | pacman -S mingw-w64-x86_64-gcc  mingw-w64-x86_64-pkg-config mingw-w64-x86_64-zlib mingw-w64-x86_64-imagemagick
+          yes | pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-pkg-config mingw-w64-x86_64-zlib mingw-w64-x86_64-imagemagick mingw-w64-x86_64-go
 
       - name: Build 
         if: always()
-        shell: cmd
+        shell: msys2 {0}
         run: |
-          set PATH=D:\msys64\mingw64\bin;%PATH%
-          set PKG_CONFIG_PATH=D:\msys64\mingw64\lib\pkgconfig
-          set MAGICK_CODER_MODULE_PATH=D:\msys64\mingw64\lib\ImageMagick-7.1.1\modules-Q16HDRI\coders
-          go build -o 7tv-extract-win-x86_64.exe
-
-      - name: Zip
-        run: tar -a -c -f 7tv-extract.zip 7tv-extract-win-x86_64.exe *.dll
+          export PATH=/mingw64/bin:$PATH
+          export PATH=/mingw64/lib/go/bin:$PATH
+          export GOROOT=/mingw64/lib/go
+          export PATH=$GOPATH/bin:$PATH
+          export PKG_CONFIG_PATH=/mingw64/lib/pkgconfig
+          export MAGICK_CODER_MODULE_PATH=/mingw64/lib/ImageMagick-7.1.1/modules-Q16HDRI/coders
           
+          go generate
+          go build -v -o out/7tv-extract.exe
+          cp lib/*.dll out/
+          
+          tar acf 7tv-extract.zip out/*.exe out/*.dll
+
       - name: Upload binary
         uses: softprops/action-gh-release@v1
         with:
-          files: 7tv-extract
+          files: 7tv-extract.zip
 
   # release-lin:
   #   name: 📦 Release executables (linux-x86_64)

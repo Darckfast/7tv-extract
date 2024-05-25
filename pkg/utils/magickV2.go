@@ -1,9 +1,7 @@
 package utils
 
 import (
-	"fmt"
 	"os"
-	"sync/atomic"
 
 	"7tv-extract/pkg/types"
 
@@ -11,23 +9,22 @@ import (
 )
 
 var (
-	ResolutionsAttempt                 = []uint{128, 96, 64}
-	totalEmotesConverted atomic.Uint32 = atomic.Uint32{}
-	lastEmoteConverted   string        = ""
-	mw                   *imagick.MagickWand
+	ResolutionsAttempt        = []uint{128, 96, 64}
+	emotesConverted           = 0
+	emotesSkipped             = 0
+	lastEmoteConverted string = ""
+	MAX_SIZE_LIMIT            = 1024 * 1024 * 5
+	HARD_SIZE_LIMIT    int64  = 256 * 1024
 )
 
-func InitMagick() {
-}
-
 func DoConversion(shortEmote *types.ShortEmoteList) {
-	totalEmotesConverted.Add(1)
+	emotesConverted = emotesConverted + 1
 	lastEmoteConverted = shortEmote.EmoteName
 
-    defer os.Remove(shortEmote.FullPath)
+	defer os.Remove(shortEmote.FullPath)
 
-	if shortEmote.Size > 256*1024*5 {
-		ConvertFileV2(shortEmote, 64)
+	if shortEmote.Size > MAX_SIZE_LIMIT {
+		emotesSkipped = emotesSkipped + 1
 		return
 	}
 
@@ -36,7 +33,7 @@ func DoConversion(shortEmote *types.ShortEmoteList) {
 
 		fs, _ := os.Stat(shortEmote.OutputPath)
 
-		if fs.Size() <= 256*1024 {
+		if fs.Size() <= HARD_SIZE_LIMIT {
 			break
 		}
 	}
@@ -51,8 +48,8 @@ func ConvertFileV2(
 
 	defer imagick.Terminate()
 	defer mw.Destroy()
-	mw.ReadImage(shortEmote.FullPath)
 
+	mw.ReadImage(shortEmote.FullPath)
 	mw.CoalesceImages()
 	mw.OptimizeImageTransparency()
 	mw.SetImageFuzz(0.07)
@@ -64,11 +61,5 @@ func ConvertFileV2(
 		mw.WriteImage(shortEmote.OutputPath)
 	}
 
-	PrintLine(
-		fmt.Sprintf("\r[%d/%d] Converting emotes [ %s ]",
-			totalEmotesConverted.Load(),
-			TotalEmotes,
-			lastEmoteConverted,
-		),
-	)
+	Progress(emotesConverted, TotalEmotes)
 }

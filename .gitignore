@@ -44,4 +44,4 @@ go.work
 *_LOCAL_*.txt
 *_REMOTE_*.txt
 
-
+out/
