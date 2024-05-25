@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.1.3](https://github.com/Darckfast/7tv-extract/compare/v0.1.2...v0.1.3) (2024-05-25)
+
+
+### Bug Fixes
+
+* fixed magick freezing ([eef1d3b](https://github.com/Darckfast/7tv-extract/commit/eef1d3be54ff322072c14f3fdc360bea69066c0d))
+* fixed magick freezing ([7173130](https://github.com/Darckfast/7tv-extract/commit/71731307a239668d17dc0fd21662709fa04c1ab5))
+* fixed negative repeat ([454cd7f](https://github.com/Darckfast/7tv-extract/commit/454cd7f38d071e8d339ec266ae523d2d02b2f2a4))
+* fixed undefined on tests ([d93908f](https://github.com/Darckfast/7tv-extract/commit/d93908fde2dae40bfc427b7a2219986c2327c98a))
+* replaced backslash ([00eeea9](https://github.com/Darckfast/7tv-extract/commit/00eeea9d27d73d4fb7cc191f24168b71a4a35175))
+
+
+### Miscellaneous
+
+* add taskfile ([67fd894](https://github.com/Darckfast/7tv-extract/commit/67fd894d98d93ea0d408914cef205a15bff720ce))
+* disabled cd ([9e9a55a](https://github.com/Darckfast/7tv-extract/commit/9e9a55ab38b9fc3a470523d7117e7a54a99310c0))
+* replaced atomic with int ([9dc1896](https://github.com/Darckfast/7tv-extract/commit/9dc189688aae3a3ea8662b589f3b692808f8ae5a))
+* updated logo ([064eb13](https://github.com/Darckfast/7tv-extract/commit/064eb1360d5bdb0ccdc8570115516b4d4b515869))
+* updated logs ([7ab0c4b](https://github.com/Darckfast/7tv-extract/commit/7ab0c4bb4b03a5d57dd38d75375186b57ac4a475))
+* updated release CD ([1cc11e2](https://github.com/Darckfast/7tv-extract/commit/1cc11e2b435d8b29626f5237cad6814dcea10675))
+
 ## [0.1.2](https://github.com/Darckfast/7tv-extract/compare/v0.1.1...v0.1.2) (2024-05-22)
 
 
