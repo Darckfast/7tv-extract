@@ -1,0 +1,11 @@
+version: '3'
+
+tasks:
+  build:
+    cmds:
+      - rm -rf *.exe resource* out/
+      - go generate
+      - go build -v -o out/7tv-extract.exe
+      - cp lib/*.dll out/
+      - rm resource*
+
