@@ -21,6 +21,11 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '^1.22'
+      - name: Install Task
+        uses: arduino/setup-task@v1
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: msys2/setup-msys2@v2
         with:
@@ -40,13 +45,13 @@ jobs:
 
       - name: Build 
         if: always()
-        shell: cmd
+        shell: msys2 {0}
         run: |
-          set PATH=D:\msys64\mingw64\bin;%PATH%
-          set PKG_CONFIG_PATH=D:\msys64\mingw64\lib\pkgconfig
-          set MAGICK_CODER_MODULE_PATH=D:\msys64\mingw64\lib\ImageMagick-7.1.1\modules-Q16HDRI\coders
-          go build -o 7tv-extract-win-x86_64.exe
-          tar acf 7tv-extract.zip *.exe *.dll
+          export PATH=D:\msys64\mingw64\bin;$PATH
+          export PKG_CONFIG_PATH=D:\msys64\mingw64\lib\pkgconfig
+          export MAGICK_CODER_MODULE_PATH=D:\msys64\mingw64\lib\ImageMagick-7.1.1\modules-Q16HDRI\coders
+          task build
+          tar acf 7tv-extract.zip out/*.exe out/*.dll
 
       - name: Upload binary
         uses: softprops/action-gh-release@v1
