@@ -11,8 +11,6 @@ import (
 )
 
 func TestMagickReadImage(t *testing.T) {
-	utils.InitMagick()
-
 	shortEmote := types.ShortEmoteList{
 		EmoteName:  "wtf",
 		FullPath:   "../../.github/images/RIPGE.webp",
@@ -30,7 +28,6 @@ func TestMagickReadImage(t *testing.T) {
 }
 
 func TestMagickReadAnimatedImage(t *testing.T) {
-	utils.InitMagick()
 	shortEmote := types.ShortEmoteList{
 		EmoteName:  "yo",
 		FullPath:   "../../.github/images/yo.webp",
@@ -46,4 +43,3 @@ func TestMagickReadAnimatedImage(t *testing.T) {
 	assert.False(t, err != nil)
 	assert.Greater(t, fs.Size(), int64(0))
 }
-
